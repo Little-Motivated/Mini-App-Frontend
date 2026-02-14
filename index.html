@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarberBooking</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, var(--tg-theme-bg-color, #ffffff) 0%, var(--tg-theme-secondary-bg-color, #f5f5f5) 100%);
+            color: var(--tg-theme-text-color, #000000);
+            min-height: 100vh;
+            padding: 20px 16px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--tg-theme-button-color, #2481cc) 0%, var(--tg-theme-link-color, #1a6db5) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999999);
+            margin-top: 4px;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        /* Selection Grid */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .selection-item {
+            position: relative;
+            padding: 16px 12px;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            text-align: center;
+        }
+
+        .selection-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .selection-item.selected {
+            background: var(--tg-theme-button-color, #2481cc);
+            border-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            box-shadow: 0 4px 16px rgba(36, 129, 204, 0.3);
+        }
+
+        .selection-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .selection-item label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .item-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .service-price {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .selection-item.selected .service-price {
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        /* Checkmark for selected items */
+        .selection-item.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--tg-theme-button-text-color, #ffffff);
+            color: var(--tg-theme-button-color, #2481cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Calendar Section */
+        .calendar-card {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-icon {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+        }
+
+        .calendar-month-year {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--tg-theme-text-color, #000000);
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 12px;
+            gap: 4px;
+        }
+
+        .weekday {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--tg-theme-hint-color, #999999);
+            padding: 8px 4px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            position: relative;
+        }
+
+        .calendar-day:hover:not(.past-day):not(.empty) {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.today {
+            font-weight: 700;
+            border: 2px solid var(--tg-theme-button-color, #2481cc);
+        }
+
+        .calendar-day.past-day {
+            opacity: 0.35;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        .calendar-day.selected {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            box-shadow: 0 4px 12px rgba(36, 129, 204, 0.3);
+            font-weight: 600;
+        }
+
+        .calendar-day.selected::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 4px;
+            height: 4px;
+            background: var(--tg-theme-button-text-color, #ffffff);
+            border-radius: 50%;
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        /* Time Slots */
+        .time-card {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .time-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .time-icon {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .time-slot {
+            padding: 14px 8px;
+            font-size: 15px;
+            font-weight: 500;
+            border: 2px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+            border-radius: 14px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .time-slot:hover {
+            border-color: var(--tg-theme-button-color, #2481cc);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .time-slot.selected {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border-color: var(--tg-theme-button-color, #2481cc);
+            box-shadow: 0 4px 16px rgba(36, 129, 204, 0.3);
+            font-weight: 600;
+        }
+
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-top-color: var(--tg-theme-button-color, #2481cc);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 15px;
+        }
+
+        /* Summary Card (appears when all selected) */
+        .summary-card {
+            background: linear-gradient(135deg, var(--tg-theme-button-color, #2481cc) 0%, var(--tg-theme-link-color, #1a6db5) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            color: var(--tg-theme-button-text-color, #ffffff);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .summary-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .summary-icon {
+            font-size: 16px;
+        }
+
+        /* Animations for section appearance */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .selection-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Pulse animation for active elements */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <span class="header-icon">💈</span>
+            <h1 id="greeting">Здравствуйте!</h1>
+            <p class="header-subtitle">Запишитесь к лучшим мастерам</p>
+        </header>
+
+        <!-- Master Selection -->
+        <section class="section-card" id="master-section">
+            <div class="section-header">
+                <div class="section-icon">👨‍💼</div>
+                <h2 class="section-title">Выберите мастера</h2>
+            </div>
+            <div class="selection-grid" id="masters-list">
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Загрузка мастеров...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Selection -->
+        <section class="section-card" id="service-section">
+            <div class="section-header">
+                <div class="section-icon">✂️</div>
+                <h2 class="section-title">Выберите услугу</h2>
+            </div>
+            <div class="selection-grid" id="services-list">
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Загрузка услуг...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar -->
+        <section class="calendar-card" id="calendar-section" style="display: none;">
+            <div class="calendar-header">
+                <div class="calendar-title-row">
+                    <div class="calendar-icon">📅</div>
+                    <span class="calendar-month-year" id="current-month-year"></span>
+                </div>
+                <div class="calendar-nav">
+                    <button id="prev-month" class="nav-btn">‹</button>
+                    <button id="next-month" class="nav-btn">›</button>
+                </div>
+            </div>
+            <div class="calendar-weekdays">
+                <div class="weekday">Пн</div>
+                <div class="weekday">Вт</div>
+                <div class="weekday">Ср</div>
+                <div class="weekday">Чт</div>
+                <div class="weekday">Пт</div>
+                <div class="weekday">Сб</div>
+                <div class="weekday">Вс</div>
+            </div>
+            <div class="calendar-days" id="calendar-days"></div>
+        </section>
+
+        <!-- Time Slots -->
+        <section class="time-card" id="time-section" style="display: none;">
+            <div class="time-header">
+                <div class="time-icon">🕐</div>
+                <h2 class="section-title">Доступное время</h2>
+            </div>
+            <div class="time-slots-grid" id="time-slots"></div>
+        </section>
+
+        <!-- Booking Summary -->
+        <section class="summary-card" id="summary-section" style="display: none;">
+            <div class="summary-title">Ваша запись</div>
+            <div class="summary-item">
+                <span class="summary-icon">👨‍💼</span>
+                <span id="summary-master">Мастер не выбран</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-icon">✂️</span>
+                <span id="summary-service">Услуга не выбрана</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-icon">📅</span>
+                <span id="summary-datetime">Дата и время не выбраны</span>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // API Base URL - update this to your backend URL
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Application State
+        const state = {
+            selectedMasterId: null,
+            selectedServiceId: null,
+            selectedDate: null,
+            selectedTime: null,
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            masters: [],
+            services: []
+        };
+
+        // DOM Elements
+        const elements = {
+            greeting: document.getElementById('greeting'),
+            mastersList: document.getElementById('masters-list'),
+            servicesList: document.getElementById('services-list'),
+            calendarSection: document.getElementById('calendar-section'),
+            calendarDays: document.getElementById('calendar-days'),
+            currentMonthYear: document.getElementById('current-month-year'),
+            prevMonthBtn: document.getElementById('prev-month'),
+            nextMonthBtn: document.getElementById('next-month'),
+            timeSection: document.getElementById('time-section'),
+            timeSlots: document.getElementById('time-slots'),
+            summarySection: document.getElementById('summary-section'),
+            summaryMaster: document.getElementById('summary-master'),
+            summaryService: document.getElementById('summary-service'),
+            summaryDatetime: document.getElementById('summary-datetime')
+        };
+
+        // Telegram WebApp
+        const tg = window.Telegram.WebApp;
+
+        // Initialize Application
+        function init() {
+            tg.ready();
+            tg.expand();
+            
+            // Set user greeting
+            const user = tg.initDataUnsafe.user;
+            if (user && user.first_name) {
+                elements.greeting.textContent = `Привет, ${user.first_name}! 👋`;
+            }
+            
+            // Setup MainButton
+            tg.MainButton.hide();
+            
+            // Load initial data
+            loadMasters();
+            loadServices();
+            
+            // Setup navigation buttons
+            elements.prevMonthBtn.addEventListener('click', () => navigateMonth(-1));
+            elements.nextMonthBtn.addEventListener('click', () => navigateMonth(1));
+            
+            // Setup MainButton click handler
+            tg.onEvent('mainButtonClicked', sendBookingData);
+        }
+
+        // API Functions
+        async function loadMasters() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/masters`);
+                const masters = await response.json();
+                state.masters = masters;
+                renderMasters(masters);
+            } catch (error) {
+                console.error('Error loading masters:', error);
+                elements.mastersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-text">Не удалось загрузить мастеров</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadServices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/services`);
+                const services = await response.json();
+                state.services = services;
+                renderServices(services);
+            } catch (error) {
+                console.error('Error loading services:', error);
+                elements.servicesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-text">Не удалось загрузить услуги</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadTimeSlots(masterId, date) {
+            elements.timeSlots.innerHTML = `
+                <div class="loading-container" style="grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Загрузка времени...</span>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/slots?master_id=${masterId}&date=${date}`);
+                const times = await response.json();
+                renderTimeSlots(times);
+            } catch (error) {
+                console.error('Error loading time slots:', error);
+                elements.timeSlots.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-text">Не удалось загрузить время</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function sendBookingData() {
+            const userId = tg.initDataUnsafe.user?.id;
+            
+            if (!userId) {
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось получить ID пользователя'
+                });
+                return;
+            }
+            
+            const bookingData = {
+                user_id: userId,
+                master_id: state.selectedMasterId,
+                service_id: state.selectedServiceId,
+                date: state.selectedDate,
+                time: state.selectedTime
+            };
+            
+            tg.MainButton.showProgress();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/booking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const result = await response.json();
+                tg.MainButton.hideProgress();
+                
+                if (result.success) {
+                    tg.showPopup({
+                        title: '✅ Успех!',
+                        message: result.message || 'Вы успешно записаны! Ждем вас в назначенное время.'
+                    });
+                    setTimeout(() => tg.close(), 1500);
+                } else {
+                    tg.showPopup({
+                        title: '❌ Ошибка',
+                        message: result.message || 'Не удалось создать запись'
+                    });
+                }
+            } catch (error) {
+                tg.MainButton.hideProgress();
+                console.error('Error sending booking:', error);
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось отправить данные. Проверьте подключение.'
+                });
+            }
+        }
+
+        // Render Functions
+        function renderMasters(masters) {
+            elements.mastersList.innerHTML = '';
+            
+            const icons = ['👨', '👱', '🧔', '👦', '🧑', '👨‍🦱'];
+            
+            masters.forEach((master, index) => {
+                const item = document.createElement('div');
+                item.className = 'selection-item';
+                item.dataset.masterId = master.id;
+                
+                item.innerHTML = `
+                    <input type="radio" name="master" id="master-${master.id}" value="${master.id}">
+                    <label for="master-${master.id}">
+                        <span class="item-icon">${icons[index % icons.length]}</span>
+                        <span>${master.name}</span>
+                    </label>
+                `;
+                
+                item.addEventListener('click', () => selectMaster(master.id, item));
+                elements.mastersList.appendChild(item);
+            });
+        }
+
+        function renderServices(services) {
+            elements.servicesList.innerHTML = '';
+            
+            const icons = ['✂️', '🪒', '💇', '🧴', '💆', '🎨'];
+            
+            services.forEach((service, index) => {
+                const item = document.createElement('div');
+                item.className = 'selection-item';
+                item.dataset.serviceId = service.id;
+                
+                item.innerHTML = `
+                    <input type="radio" name="service" id="service-${service.id}" value="${service.id}">
+                    <label for="service-${service.id}">
+                        <span class="item-icon">${icons[index % icons.length]}</span>
+                        <span>${service.name}</span>
+                        <span class="service-price">${service.price}₽</span>
+                    </label>
+                `;
+                
+                item.addEventListener('click', () => selectService(service.id, item));
+                elements.servicesList.appendChild(item);
+            });
+        }
+
+        function renderCalendar(year, month) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            
+            // Update month/year display
+            const monthNames = [
+                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+            ];
+            elements.currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+            
+            // Clear calendar
+            elements.calendarDays.innerHTML = '';
+            
+            // Add empty cells for days before the first day
+            for (let i = 0; i < startingDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                elements.calendarDays.appendChild(emptyDay);
+            }
+            
+            // Add day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateStr = formatDate(date);
+                const isPast = date < today;
+                const isToday = date.getTime() === today.getTime();
+                
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                dayCell.textContent = day;
+                dayCell.dataset.date = dateStr;
+                
+                if (isPast) {
+                    dayCell.classList.add('past-day');
+                }
+                
+                if (isToday) {
+                    dayCell.classList.add('today');
+                }
+                
+                if (state.selectedDate === dateStr) {
+                    dayCell.classList.add('selected');
+                }
+                
+                if (!isPast) {
+                    dayCell.addEventListener('click', () => onDateClick(dateStr, dayCell));
+                }
+                
+                elements.calendarDays.appendChild(dayCell);
+            }
+        }
+
+        function renderTimeSlots(times) {
+            elements.timeSlots.innerHTML = '';
+            
+            if (!times || times.length === 0) {
+                elements.timeSlots.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">😔</div>
+                        <div class="empty-text">Нет доступного времени на эту дату</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            times.forEach(time => {
+                const timeBtn = document.createElement('button');
+                timeBtn.className = 'time-slot';
+                timeBtn.textContent = time;
+                timeBtn.dataset.time = time;
+                
+                if (state.selectedTime === time) {
+                    timeBtn.classList.add('selected');
+                }
+                
+                timeBtn.addEventListener('click', () => onTimeClick(time, timeBtn));
+                elements.timeSlots.appendChild(timeBtn);
+            });
+        }
+
+        function updateSummary() {
+            const master = state.masters.find(m => m.id === state.selectedMasterId);
+            const service = state.services.find(s => s.id === state.selectedServiceId);
+            
+            if (master && service && state.selectedDate && state.selectedTime) {
+                elements.summaryMaster.textContent = master.name;
+                elements.summaryService.textContent = `${service.name} (${service.price}₽)`;
+                elements.summaryDatetime.textContent = `${formatDateDisplay(state.selectedDate)} в ${state.selectedTime}`;
+                elements.summarySection.style.display = 'block';
+            } else {
+                elements.summarySection.style.display = 'none';
+            }
+        }
+
+        function formatDateDisplay(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            const date = new Date(year, month - 1, day);
+            const options = { day: 'numeric', month: 'long' };
+            return date.toLocaleDateString('ru-RU', options);
+        }
+
+        // Event Handlers
+        function selectMaster(masterId, element) {
+            state.selectedMasterId = masterId;
+            
+            // Update UI
+            document.querySelectorAll('#masters-list .selection-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            // Check if we can show calendar
+            checkCalendarVisibility();
+            updateSummary();
+            checkSelectionAndShowButton();
+        }
+
+        function selectService(serviceId, element) {
+            state.selectedServiceId = serviceId;
+            
+            // Update UI
+            document.querySelectorAll('#services-list .selection-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            // Check if we can show calendar
+            checkCalendarVisibility();
+            updateSummary();
+            checkSelectionAndShowButton();
+        }
+
+        function onDateClick(dateStr, element) {
+            state.selectedDate = dateStr;
+            state.selectedTime = null; // Reset time when date changes
+            
+            // Update UI
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            // Show time section and load slots
+            elements.timeSection.style.display = 'block';
+            elements.timeSection.classList.add('fade-in');
+            loadTimeSlots(state.selectedMasterId, dateStr);
+            
+            updateSummary();
+            checkSelectionAndShowButton();
+        }
+
+        function onTimeClick(time, element) {
+            state.selectedTime = time;
+            
+            // Update UI
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            updateSummary();
+            checkSelectionAndShowButton();
+        }
+
+        function navigateMonth(direction) {
+            state.currentMonth += direction;
+            
+            if (state.currentMonth > 11) {
+                state.currentMonth = 0;
+                state.currentYear++;
+            } else if (state.currentMonth < 0) {
+                state.currentMonth = 11;
+                state.currentYear--;
+            }
+            
+            renderCalendar(state.currentYear, state.currentMonth);
+        }
+
+        // Helper Functions
+        function checkCalendarVisibility() {
+            if (state.selectedMasterId && state.selectedServiceId) {
+                elements.calendarSection.style.display = 'block';
+                elements.calendarSection.classList.add('fade-in');
+                renderCalendar(state.currentYear, state.currentMonth);
+            } else {
+                elements.calendarSection.style.display = 'none';
+                elements.timeSection.style.display = 'none';
+                elements.summarySection.style.display = 'none';
+            }
+        }
+
+        function checkSelectionAndShowButton() {
+            if (state.selectedMasterId && 
+                state.selectedServiceId && 
+                state.selectedDate && 
+                state.selectedTime) {
+                tg.MainButton.setText('✓ Записаться');
+                tg.MainButton.show();
+                tg.MainButton.enable();
+            } else {
+                tg.MainButton.hide();
+            }
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function showError(message) {
+            tg.showPopup({
+                title: '❌ Ошибка',
+                message: message
+            });
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
