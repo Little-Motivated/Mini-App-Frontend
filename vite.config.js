@@ -7,4 +7,3 @@ export default defineConfig({
     base: "/Mini-App-Frontend/"
   }
 });
-
